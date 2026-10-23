@@ -656,6 +656,7 @@ function starPath(x,y,r,rot,pts){pts=pts||5;ctx.beginPath();for(let i=0;i<pts*2;
 // ochre patches on the flanks, tan-tipped ears, sky-blue eyes, small dark nose, gentle smile.
 const C_CREAM='#fffdf8',C_WHITE='#ffffff',C_YEL='#f7dc95',C_YEL2='#fbeccb',C_TAN='#dcc7a2',C_EYE='#4fb8ea',C_NOSE='#2d2a2a',C_LINE='#1f1a1a';
 function drawCat(x,y,s,o){
+  const CREAM=o.tint||C_CREAM;
   const run=o.run,face=o.face,ph=Math.sin(run);
   ctx.save();ctx.translate(x,y);ctx.rotate(o.rot||0);ctx.scale(s*(o.sx||1),s*(o.sy||1));
   ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=C_LINE;ctx.lineWidth=2.2;
@@ -664,11 +665,11 @@ function drawCat(x,y,s,o){
   ctx.save();ctx.translate(11,-6);ctx.rotate(-0.12+Math.sin(run*0.5)*0.14);
   const tailP=()=>{ctx.beginPath();ctx.moveTo(0,-5);ctx.bezierCurveTo(4,-14,12,-9,16,-12);ctx.bezierCurveTo(21,-16,27,-12,30,-17);ctx.bezierCurveTo(36,-17,36,-9,33,-4);
     ctx.bezierCurveTo(36,3,28,8,22,5);ctx.bezierCurveTo(17,10,8,8,6,3);ctx.bezierCurveTo(3,4,0,2,0,-5);ctx.closePath();};
-  ctx.fillStyle=C_CREAM;tailP();ctx.fill();ctx.save();tailP();ctx.clip();ctx.fillStyle=C_YEL;ell(31,-10,5,6,0.3);ctx.fill();ctx.restore();tailP();ctx.stroke();
+  ctx.fillStyle=CREAM;tailP();ctx.fill();ctx.save();tailP();ctx.clip();ctx.fillStyle=C_YEL;ell(31,-10,5,6,0.3);ctx.fill();ctx.restore();tailP();ctx.stroke();
   ctx.restore();
   // tall egg-shaped body with ochre side patches
   const bodyP=()=>{ctx.beginPath();ctx.moveTo(-11,-27);ctx.bezierCurveTo(-17,-20,-17,-6,-14,-1);ctx.lineTo(14,-1);ctx.bezierCurveTo(17,-6,17,-20,11,-27);ctx.closePath();};
-  ctx.fillStyle=C_CREAM;bodyP();ctx.fill();
+  ctx.fillStyle=CREAM;bodyP();ctx.fill();
   ctx.save();bodyP();ctx.clip();
   ctx.fillStyle=C_YEL;ell(-15,-9,3.5,6,-0.2);ctx.fill();ell(15,-7,3,5,0.2);ctx.fill();
   ctx.restore();
@@ -681,14 +682,14 @@ function drawCat(x,y,s,o){
   // head: tall pointed ears, spiky fluffy cheeks and a jagged ruff at the neck
   ctx.save();ctx.translate(0,-33);ctx.rotate(Math.sin(run*0.5)*0.06+(o.tilt||0));
   for(const sd of [-1,1]){
-    ctx.fillStyle=C_CREAM;ctx.beginPath();ctx.moveTo(sd*16,-6);ctx.lineTo(sd*13,-26);ctx.lineTo(sd*3,-13);ctx.closePath();ctx.fill();
+    ctx.fillStyle=CREAM;ctx.beginPath();ctx.moveTo(sd*16,-6);ctx.lineTo(sd*13,-26);ctx.lineTo(sd*3,-13);ctx.closePath();ctx.fill();
     ctx.save();ctx.clip();ctx.fillStyle='#c9ad82';ctx.beginPath();ctx.moveTo(sd*17,-10);ctx.lineTo(sd*13,-27);ctx.lineTo(sd*8,-18);ctx.closePath();ctx.fill();ctx.restore();
     ctx.beginPath();ctx.moveTo(sd*16,-6);ctx.lineTo(sd*13,-26);ctx.lineTo(sd*3,-13);ctx.closePath();ctx.stroke();
     ctx.fillStyle='#f3c48a';ctx.beginPath();ctx.moveTo(sd*12.5,-10);ctx.lineTo(sd*12.2,-20);ctx.lineTo(sd*6.5,-14);ctx.closePath();ctx.fill();
   }
   const HEAD=[[0,-14],[8,-13.5],[15,-9],[22,-9],[17,-5],[25,-1],[18,1],[24,6],[16,8],[15,11],[12,18],[8,13],[4,20],[0,13],[-4,20],[-8,13],[-12,18],[-15,11],[-16,8],[-24,6],[-18,1],[-25,-1],[-17,-5],[-22,-9],[-15,-9],[-8,-13.5]];
   const headP=()=>{ctx.beginPath();HEAD.forEach(([a,b],i)=>i?ctx.lineTo(a,b):ctx.moveTo(a,b));ctx.closePath();};
-  ctx.fillStyle=C_CREAM;headP();ctx.fill();
+  ctx.fillStyle=CREAM;headP();ctx.fill();
   ctx.save();headP();ctx.clip();
   // face patches: tan round the left eye, butter-yellow on the right, soft yellow on the crown
   ctx.fillStyle=C_TAN;ell(-9,-3,6.5,5,0.3);ctx.fill();
@@ -911,8 +912,9 @@ function drawPlayer(g){
   let y=gy-g.z;
   if(g.state==='dead'){o.rot=g.endT*9;y-=g.endT*140-g.endT*g.endT*60+20;o.face='hurt';}
   if(g.state==='count')o.run=g.t*3;
-  if(g.star>0&&g.state!=='dead'){ctx.save();ctx.filter='hue-rotate('+((g.t*600)%360|0)+'deg) saturate(1.6) brightness(1.08)';drawCat(g.px,y,s,o);ctx.restore();}
-  else drawCat(g.px,y,s,o);
+  // invincible: rainbow-cycling fur (a plain colour, not ctx.filter, which drops Chrome on Mac to a few fps)
+  if(g.star>0&&g.state!=='dead')o.tint='hsl('+((g.t*600)%360|0)+',95%,78%)';
+  drawCat(g.px,y,s,o);
 }
 function drawHUD(g){
   // hearts
